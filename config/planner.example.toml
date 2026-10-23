@@ -2,6 +2,7 @@
 # Times are local (timezone below). Days: sun mon tue wed thu fri sat.
 
 timezone = "Asia/Qatar"
+school_location = "UDST"   # feed events at this LOCATION are university-wide dates
 send_at = "05:00"          # daily message
 quiet_from = "22:00"       # no alerts from here ...
 quiet_until = "05:00"      # ... until here

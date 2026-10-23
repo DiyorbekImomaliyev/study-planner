@@ -70,6 +70,7 @@ class RoutineBlock:
 @dataclass
 class Settings:
     timezone: str = "Asia/Qatar"
+    school_location: str = ""  # feed LOCATION of university-wide dates, e.g. "UDST"
     send_at: time = time(5, 0)
     quiet_from: time = time(22, 0)
     quiet_until: time = time(5, 0)
@@ -123,6 +124,7 @@ def load_settings(path: Path | None = None) -> Settings:
         ZoneInfo(s.timezone)
     except (ZoneInfoNotFoundError, ValueError) as e:
         raise ConfigError(f"unknown timezone {s.timezone!r}") from e
+    s.school_location = raw.get("school_location", "")
     s.send_at = hm(raw.get("send_at", "05:00"))
     s.quiet_from = hm(raw.get("quiet_from", "22:00"))
     s.quiet_until = hm(raw.get("quiet_until", "05:00"))

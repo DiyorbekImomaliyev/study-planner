@@ -109,6 +109,21 @@ def cmd_check(_args: argparse.Namespace) -> int:
     return 0 if ok else 1
 
 
+def cmd_chat_id(_args: argparse.Namespace) -> int:
+    """Print the chats that messaged the bot, to find TELEGRAM_CHAT_ID. Run before `planner bot` is running."""
+    tg = Telegram(secret("TELEGRAM_BOT_TOKEN") or "", "-")
+    seen = {}
+    for u in tg.call("getUpdates") or []:
+        chat = (u.get("message") or {}).get("chat") or {}
+        if "id" in chat:
+            seen[chat["id"]] = chat.get("username") or chat.get("first_name") or "?"
+    if not seen:
+        print("no messages yet - open your bot in Telegram, send it /start, then run this again")
+    for cid, name in seen.items():
+        print(f"{cid}  {name}")
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
     p = argparse.ArgumentParser(prog="planner", description="Daily study plan and D2L deadlines on Telegram.")
     p.add_argument("-v", "--verbose", action="store_true")
@@ -120,11 +135,13 @@ def main(argv: list[str] | None = None) -> int:
     pv.add_argument("day", nargs="?", help="YYYY-MM-DD (default today)")
     sub.add_parser("bot", help="run the Telegram bot (buttons, messages, schedule)")
     sub.add_parser("check", help="check config, secrets, chrome and the bot")
+    sub.add_parser("chat-id", help="show your chat id (send the bot /start first)")
     args = p.parse_args(argv)
     load_dotenv()
     setup_logging(args.verbose)
     try:
-        return {"run": cmd_run, "preview": cmd_preview, "bot": cmd_bot, "check": cmd_check}[args.cmd](args)
+        commands = {"run": cmd_run, "preview": cmd_preview, "bot": cmd_bot, "check": cmd_check, "chat-id": cmd_chat_id}
+        return commands[args.cmd](args)
     except (ConfigError, TelegramError) as e:
         print(redact(str(e)), file=sys.stderr)
         return 1

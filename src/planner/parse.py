@@ -1,4 +1,4 @@
-"""Understand the owner's messages: new deadlines and work logs (SPEC IN-1, IN-2)."""
+"""Understand messages from the bot's owner: new deadlines and work logs (SPEC IN-1, IN-2)."""
 
 from __future__ import annotations
 

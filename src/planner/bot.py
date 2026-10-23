@@ -1,4 +1,4 @@
-"""The Telegram bot: buttons, messages from the owner, and the polling loop (SPEC MSG-4, ALR-2..3, IN-1..4)."""
+"""The Telegram bot: buttons, messages from its owner, and the polling loop (SPEC MSG-4, ALR-2..3, IN-1..4)."""
 
 from __future__ import annotations
 
@@ -83,7 +83,7 @@ class Bot:
         d = self.ctx.store.deadline(uid) if uid else None
         if d is None:
             return "not found"
-        name = d.title if d.course in ("udst", "other") else f"{d.course} {d.title}"
+        name = d.title if d.course in ("school", "other") else f"{d.course} {d.title}"
         if choice == "done":
             self.ctx.store.set_done(uid)
             text = f"- {render.e(name)} - done - no more alerts"
@@ -110,7 +110,7 @@ class Bot:
 
     def describe(self, d: Deadline) -> str:
         local = d.due.astimezone(self.ctx.s.tz)
-        name = d.title if d.course in ("udst", "other") else f"{d.course} {d.title}"
+        name = d.title if d.course in ("school", "other") else f"{d.course} {d.title}"
         return f"{name} - {render.day_title(local.date())} - {local:%H:%M}"
 
     # ---- text ----

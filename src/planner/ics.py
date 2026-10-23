@@ -14,7 +14,7 @@ ALL_DAY_TIME = time(23, 59)  # an all-day item is due at the end of that day
 @dataclass(frozen=True)
 class Deadline:
     uid: str
-    course: str  # "inft2201", or "udst" for university dates
+    course: str  # "inft2201", or "school" for university-wide dates
     title: str  # cleaned, e.g. "lab 6 - ipc"
     kind: str  # lab | quiz | assignment | exam | other
     due: datetime  # aware, UTC
@@ -79,9 +79,9 @@ SUFFIX_RE = re.compile(r"\s*-\s*(due|availability ends|available)\s*$", re.I)
 NOISE_RE = re.compile(r"-?\s*requires respondus lockdown browser\s*", re.I)
 
 
-def course_of(summary: str, location: str) -> str:
-    if location.strip().upper() == "UDST":
-        return "udst"
+def course_of(summary: str, location: str, school: str = "") -> str:
+    if school and location.strip().lower() == school.lower():
+        return "school"
     for text in (location, summary):
         if m := COURSE_RE.search(text):
             return m[1].replace(" ", "").lower()
@@ -104,15 +104,16 @@ def kind_of(title: str) -> str:
 def clean_title(summary: str, course: str) -> str:
     t = SUFFIX_RE.sub("", summary)
     t = NOISE_RE.sub(" ", t)
-    if course not in ("udst", "other"):  # "DSAI3201 Fall 2026 Quiz 1" -> "Quiz 1"
+    if course not in ("school", "other"):  # "DSAI3201 Fall 2026 Quiz 1" -> "Quiz 1"
         t = re.sub(rf"^\s*{course[:4]}\s?{course[4:]}\s*((fall|winter|spring|summer)\s*\d{{4}})?\s*", "", t, flags=re.I)
     t = re.sub(r"\s*-\s*", " - ", t)  # "Lab 6 -  IPC" and "Quiz 1-" -> one style
     t = re.sub(r"\s+", " ", t).strip(" -")
     return t.lower()
 
 
-def deadlines_from_feed(text: str, local: ZoneInfo) -> list[Deadline]:
-    """Deadlines and university dates. Items that only say when something opens are skipped."""
+def deadlines_from_feed(text: str, local: ZoneInfo, school: str = "") -> list[Deadline]:
+    """Deadlines and university-wide dates (events whose LOCATION is `school`, e.g. "UDST").
+    Items that only say when something opens are skipped."""
     out: list[Deadline] = []
     for ev in parse_events(text):
         summary, location = ev.get("SUMMARY", "").strip(), ev.get("LOCATION", "").strip()
@@ -120,15 +121,15 @@ def deadlines_from_feed(text: str, local: ZoneInfo) -> list[Deadline]:
             continue
         m = SUFFIX_RE.search(summary)
         suffix = m[1].lower() if m else ""
-        course = course_of(summary, location)
+        course = course_of(summary, location, school)
         if suffix == "available":
             continue  # an opening time, not a deadline
-        if not suffix and course != "udst":
+        if not suffix and course != "school":
             continue  # course events without "- Due" are not deadlines
         due, _ = parse_dt(ev["DTSTART"], ev.get("DTSTART_PARAMS", ""), local)
         title = clean_title(summary, course)
         out.append(Deadline(ev.get("UID", f"{summary}-{ev['DTSTART']}"), course, title,
-                            kind_of(title) if course != "udst" else "other", due))
+                            kind_of(title) if course != "school" else "other", due))
     return out
 
 

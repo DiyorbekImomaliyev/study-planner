@@ -75,7 +75,7 @@ def refresh_feed(ctx: Ctx, now: datetime, force: bool = False) -> bool:
         resp.raise_for_status()
         if "BEGIN:VCALENDAR" not in resp.text:
             raise ValueError("not a calendar (the link may have been reset)")
-        items = deadlines_from_feed(resp.text, ctx.s.tz)
+        items = deadlines_from_feed(resp.text, ctx.s.tz, ctx.s.school_location)
     except (httpx.HTTPError, ValueError) as e:
         ctx.store.kv_set("feed_error", redact(str(e))[:200])
         log.warning("d2l feed failed: %s", redact(str(e)))
@@ -208,7 +208,7 @@ def left_label(delta: timedelta) -> str:
 
 def alert_text(ctx: Ctx, d: Deadline, now: datetime) -> str:
     local = d.due.astimezone(ctx.s.tz)
-    name = d.title if d.course in ("udst", "other") else f"{d.course} {d.title}"
+    name = d.title if d.course in ("school", "other") else f"{d.course} {d.title}"
     return (f"<b>due in {left_label(d.due - now)}</b>\n- {render.e(name)}\n"
             f"- {weekday(local.date())} {local.day} {local:%b}".lower() + f" - {local:%H:%M}")
 
@@ -286,7 +286,7 @@ def weekly_stats(ctx: Ctx, today: date) -> str:
         done_h += sum(p.hours(t) for t in ("leetcode", "learn", "uni") if t in got)
     done_h += ctx.store.logged(start, end)
     a = datetime.combine(week_start(today), time(0), ctx.s.tz).astimezone(UTC)
-    week_items = [d for d in ctx.store.upcoming(a, a + timedelta(days=7)) if d.course != "udst"]
+    week_items = [d for d in ctx.store.upcoming(a, a + timedelta(days=7)) if d.course != "school"]
     return render.weekly_text(
         week_start(today), end, musts, len(days), ctx.store.solved_between(start, end), len(ctx.store.solved()),
         round(done_h, 1), round(plan_h, 1), sum(ctx.store.is_done(d.uid) for d in week_items), len(week_items),

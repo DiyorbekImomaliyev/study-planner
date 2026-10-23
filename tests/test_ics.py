@@ -6,7 +6,7 @@ from planner.ics import deadlines_from_feed, parse_events, to_ics, unfold
 
 
 def by_uid():
-    return {d.uid: d for d in deadlines_from_feed(fixture_text("feed.ics"), QATAR)}
+    return {d.uid: d for d in deadlines_from_feed(fixture_text("feed.ics"), QATAR, "UDST")}
 
 
 def test_unfold_joins_continuation_lines():
@@ -37,7 +37,7 @@ def test_available_and_plain_course_events_are_skipped():  # SRC-7
 
 def test_university_all_day_date_is_due_end_of_day():
     d = by_uid()["1-103@d2l.example"]
-    assert (d.course, d.title, d.kind) == ("udst", "last day to withdraw", "other")
+    assert (d.course, d.title, d.kind) == ("school", "last day to withdraw", "other")
     assert d.due.astimezone(QATAR).strftime("%Y-%m-%d %H:%M") == "2026-11-05 23:59"
 
 

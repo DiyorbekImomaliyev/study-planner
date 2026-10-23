@@ -115,7 +115,7 @@ def uni_task_for(s: Settings, store: Store, day: date, has_class: bool) -> str:
             when = "today" if e.day == day else "tomorrow" if e.day == day + timedelta(days=1) else weekday(e.day)
             return f"revise {e.course} - exam {when}"
     start, _ = local_day_bounds(s, day)
-    soon = [d for d in store.upcoming(start, start + timedelta(days=3), include_done=False) if d.course != "udst"]
+    soon = [d for d in store.upcoming(start, start + timedelta(days=3), include_done=False) if d.course != "school"]
     if soon:
         return f"{soon[0].course} {soon[0].title}"
     return "review today's lectures" if has_class else "prep next class"

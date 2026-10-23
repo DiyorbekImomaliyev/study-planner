@@ -47,7 +47,7 @@ def due_lines(due: list[Deadline], s: Settings, today: date, limit: int = 6) -> 
     out = []
     for d in due[:limit]:
         local = d.due.astimezone(s.tz)
-        name = d.title if d.course in ("udst", "other") else f"{d.course} {d.title}"
+        name = d.title if d.course in ("school", "other") else f"{d.course} {d.title}"
         out.append(f"- {when_label(local.date(), today)} - {e(name)} - {local:%H:%M}")
     if len(due) > limit:
         out.append(f"- and {len(due) - limit} more - /list")

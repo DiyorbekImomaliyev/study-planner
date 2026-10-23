@@ -1,13 +1,13 @@
 # Study Planner v1: spec
 
-Status: approved by the owner (2026-10-23).
+Status: v1, implemented.
 
 ## Goal
 
 Send the owner one clean message each morning on Telegram: today's plan, this week at a glance,
 and what is due. Track the daily musts with one tap each. Alert before every deadline.
 
-Timezone: Asia/Qatar (UTC+3) everywhere. Week starts on Sunday.
+Timezone: set in `config/planner.toml` (example: Asia/Qatar). Week starts on Sunday.
 
 ## 1. Sources
 
@@ -22,7 +22,7 @@ Timezone: Asia/Qatar (UTC+3) everywhere. Week starts on Sunday.
 - **SRC-6** Read the class timetable and final exams from `config/planner.toml`
   (course, kind, weekday, start, end, room). Fall 2026 classes end 3 Dec.
 - **SRC-7** Skip items that only say when something opens ("- Available") and course events
-  without "- Due". Keep university dates (LOCATION `UDST`).
+  without "- Due". Keep university-wide dates (LOCATION equals `school_location`, e.g. `UDST`).
 
 ## 2. Daily plan
 
